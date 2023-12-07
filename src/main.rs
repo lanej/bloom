@@ -21,9 +21,15 @@ fn main() {
     let args = Args::parse();
     let mut bloom: bloomfilter::Bloom<str> = bloomfilter::Bloom::new(args.bitmap_bytes, args.count);
 
-    std::io::stdin().lock().lines().for_each(|l| {
+    for l in std::io::stdin().lock().lines() {
         let line = l.unwrap();
+
+        if line.trim().is_empty() {
+            continue;
+        }
+
         let mut input = Cow::Borrowed(&line);
+
         if let (Some(d), Some(i)) = (&args.delimiter, &args.index) {
             input = Cow::Owned(
                 line.split(d)
@@ -32,8 +38,9 @@ fn main() {
                     .to_owned(),
             );
         }
+
         if !bloom.check_and_set(&input) {
             println!("{}", line)
         }
-    });
+    }
 }
